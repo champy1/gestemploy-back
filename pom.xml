@@ -15,7 +15,7 @@
 	<name>gpaie</name>
 	<description>Demo project for Spring Boot</description>
 	<properties>
-		<java.version>11</java.version>
+		<java.version>17</java.version>
 		<flyway.user>symfony</flyway.user>
 		<flyway.password>Symfony123*</flyway.password>
 		<flyway.schemas>gpaie</flyway.schemas>

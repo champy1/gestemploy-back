@@ -37,7 +37,7 @@ public class JWTFilter  extends OncePerRequestFilter {
             }else {
                 try{
                     String email = jwtUtil.validateTokenAndRetrieveSubject(jwt);
-                 //   System.out.print(email);
+                    System.out.print(email);
                     UserDetails userDetails = userDetailsService.loadUserByUsername(email);
                     UsernamePasswordAuthenticationToken authToken =
                             new UsernamePasswordAuthenticationToken(email, userDetails.getPassword(), userDetails.getAuthorities());
