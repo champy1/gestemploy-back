@@ -48,7 +48,7 @@ public class AuthController {
 	private UserServiceInterface userServiceInterface;
 	@PostMapping("/auth/authenticate")
 	public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtRequest authenticationRequest) throws Exception {
-    System.out.println("#############"+authenticationRequest.getUsername());
+    System.out.println(authenticationRequest.getUsername());
 	
 	if(!userServiceInterface.isEnabledUser(authenticationRequest.getUsername())){
 		throw new Exception("INVALID_CREDENTIALS", null);
