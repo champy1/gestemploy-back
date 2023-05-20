@@ -31,10 +31,19 @@ public class Planinig {
     private LocalDate dateFin;
     private LocalTime heureDebut;
     private LocalTime heureFin;
-    private String isPointe;
+    private Boolean isPointe;
+    private Integer type_planing;
 
     public Long getId() {
         return this.id;
+    }
+
+    public Integer getType_planing() {
+        return this.type_planing;
+    }
+
+    public void setType_planing(Integer type_planing) {
+        this.type_planing = type_planing;
     }
 
     public LocalDate getDatePlaning() {
@@ -61,11 +70,16 @@ public class Planinig {
         this.heureFin = heureFin;
     }
 
-    public String getIsPointe() {
+
+    public Boolean isIsPointe() {
         return this.isPointe;
     }
 
-    public void setIsPointe(String isPointe) {
+    public Boolean getIsPointe() {
+        return this.isPointe;
+    }
+
+    public void setIsPointe(Boolean isPointe) {
         this.isPointe = isPointe;
     }
 

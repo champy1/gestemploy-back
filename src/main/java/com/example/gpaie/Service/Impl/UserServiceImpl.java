@@ -17,11 +17,13 @@ import com.example.gpaie.Model.EmailDetails;
 import com.example.gpaie.Model.EmailModel;
 import com.example.gpaie.Model.UserModel;
 import com.example.gpaie.Repository.DepartementRepository;
+import com.example.gpaie.Repository.FonctionRepository;
 import com.example.gpaie.Repository.PaiementRepository;
 import com.example.gpaie.Repository.RoleRepository;
 import com.example.gpaie.Repository.UserRepository;
 import com.example.gpaie.Service.FileService;
 import com.example.gpaie.Service.MailService;
+import com.example.gpaie.Service.PlaningService;
 import com.example.gpaie.Service.UserServiceInterface;
 
 @Service
@@ -35,22 +37,26 @@ public class UserServiceImpl implements UserServiceInterface {
     @Autowired
     private DepartementRepository departementRepository;
     @Autowired
+    private FonctionRepository fonctionRepository;
+    @Autowired
     private PasswordEncoder passwordEncoder;
     @Autowired
     private MailService mailService;
     @Autowired
     private FileService fileService;
     @Autowired
-    private PaiementRepository paiementRepository;
+    private PlaningService planingService;
 
     @Override
     public UserModel save(UserModel userRequest) {
         User user;
         boolean sendMail = false;
-        var pass=randonKey(10);
+      //  System.out.println(userRequest.getDayworks());
+        var pass = randonKey(10);
         if (userRequest.getId() == null) {
             user = new User();
             user.setPassword(passwordEncoder.encode(pass));
+            user.setTypeplaning(userRequest.getTypeplaning());
             sendMail = true;
         } else {
             user = userRepository.findById(userRequest.getId()).get();
@@ -67,12 +73,21 @@ public class UserServiceImpl implements UserServiceInterface {
         user.setUsername(userRequest.getUsername());
         user.setAuthority(roleRepository.findById(userRequest.getRole()).get());
         user.setDepartement(departementRepository.findById(userRequest.getDepartement_id()).get());
-        if(!userRequest.getImageFile().isEmpty()){
-            var photo=fileService.convertImage(userRequest.getImageFile());
-            user.setImageUrl(photo);
-            user.setImage(fileService.convertImageByte(userRequest.getImageFile()));
+        user.setFonction(fonctionRepository.findById(userRequest.getFonction_id()).get());
+        if (userRequest.getImageFile() != null) {
+            if (!userRequest.getImageFile().isEmpty()) {
+                var photo = fileService.convertImage(userRequest.getImageFile());
+                user.setImageUrl(photo);
+                user.setImage(fileService.convertImageByte(userRequest.getImageFile()));
+            }
         }
-        userRepository.saveAndFlush(user);
+
+        if (userRequest.getTypeplaning() == 2) {
+
+            user.setDayworks(userRequest.getDayworks());
+        }
+        User u = userRepository.saveAndFlush(user);
+
         if (sendMail) {
             EmailDetails emailDetails = new EmailDetails();
             emailDetails.setRecipient(user.getEmail());
@@ -81,6 +96,7 @@ public class UserServiceImpl implements UserServiceInterface {
                     "Informations de connexion: Eamil:" + user.getEmail() + " Password: " + pass);
             mailService.sendMail(emailDetails);
         }
+        userRequest.setId(u.getId());
         return userRequest;
     }
 
@@ -88,7 +104,6 @@ public class UserServiceImpl implements UserServiceInterface {
         String matricule = "GE_" + randonIntKey(10).toLowerCase();
         return matricule;
     }
-
 
     @Override
     public Optional<UserModel> partialUpdate(UserModel zoneDTO) {
@@ -99,7 +114,7 @@ public class UserServiceImpl implements UserServiceInterface {
     @Override
     public List<UserModel> findAll() {
         return userRepository.findAll().stream()
-                .filter(e->e.isEnabled()).filter(e -> e.getAuthority().getAuthority().isBlank()==false)
+                .filter(e -> e.isEnabled()).filter(e -> e.getAuthority().getAuthority().isBlank() == false)
                 .map(this::userToUserModel).collect(Collectors.toList());
     }
 
@@ -110,11 +125,15 @@ public class UserServiceImpl implements UserServiceInterface {
 
     @Override
     public void delete(Long id) {
-       userRepository.findById(id).ifPresent(e->e.setEnabled(false));
-       userRepository.flush();
-      /*  var paiements=paiementRepository.findAllByUser(userRepository.findById(id).get());
-       paiementRepository.deleteAll(paiements);
-       userRepository.deleteById(id); */
+        userRepository.findById(id).ifPresent(e -> e.setEnabled(false));
+        userRepository.flush();
+        /*
+         * var
+         * paiements=paiementRepository.findAllByUser(userRepository.findById(id).get())
+         * ;
+         * paiementRepository.deleteAll(paiements);
+         * userRepository.deleteById(id);
+         */
     }
 
     public UserModel userToUserModel(User user) {
@@ -159,10 +178,12 @@ public class UserServiceImpl implements UserServiceInterface {
     @Override
     public String resetpassword(String email) {
         var user = userRepository.findByEmail(email);
-        /* for (int i = 0; i < 100; i++) {
-            System.out.println(randonIntKey(10).toLowerCase());
-        } */
-         if (user.isPresent()) {
+        /*
+         * for (int i = 0; i < 100; i++) {
+         * System.out.println(randonIntKey(10).toLowerCase());
+         * }
+         */
+        if (user.isPresent()) {
             var pass = randonKey(10).toLowerCase();
             user.get().setPassword(passwordEncoder.encode(pass));
             userRepository.flush();
@@ -174,7 +195,7 @@ public class UserServiceImpl implements UserServiceInterface {
             return "Message sent";
         } else {
             return "Message not sent";
-        } 
+        }
     }
 
     String randonKey(int size) {
@@ -189,9 +210,10 @@ public class UserServiceImpl implements UserServiceInterface {
                 .toString();
 
     }
+
     String randonIntKey(int size) {
 
-       int leftLimit = 48;
+        int leftLimit = 48;
         int rightLimit = 57;
         Random randomGenerator = new Random();
         return randomGenerator.ints(leftLimit, rightLimit + 1)
@@ -202,20 +224,20 @@ public class UserServiceImpl implements UserServiceInterface {
 
     @Override
     public boolean isEnabledUser(String email) {
-    return  userRepository.findByEmail(email).filter(e->e.isEnabled()).isPresent();
+        return userRepository.findByEmail(email).filter(e -> e.isEnabled()).isPresent();
     }
 
     @Override
     public void sendMail(EmailModel emailModel) {
         for (int i = 0; i < emailModel.getItems().length; i++) {
-            var user=userRepository.findById(emailModel.getItems()[i]).get();
-              EmailDetails emailDetails = new EmailDetails();
-        emailDetails.setRecipient(user.getEmail());
-        emailDetails.setSubject(emailModel.getSubject());
-        emailDetails.setMsgBody(emailModel.getMessage());
-        mailService.sendMail(emailDetails);
+            var user = userRepository.findById(emailModel.getItems()[i]).get();
+            EmailDetails emailDetails = new EmailDetails();
+            emailDetails.setRecipient(user.getEmail());
+            emailDetails.setSubject(emailModel.getSubject());
+            emailDetails.setMsgBody(emailModel.getMessage());
+            mailService.sendMail(emailDetails);
         }
-      
+
     }
 
 }

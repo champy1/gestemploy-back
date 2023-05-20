@@ -1,6 +1,8 @@
 package com.example.gpaie.Model;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -21,8 +23,12 @@ public class UserModel implements Serializable{
     private String email;
     private String role;
     private long departement_id;
+    private long fonction_id;
     private String departement;
+    private String fonction;
     private byte[] image;
+    private Integer typeplaning;
+    private Set<Integer> dayworks= new HashSet<>();
     public UserModel() {
     }
 
@@ -40,6 +46,10 @@ public class UserModel implements Serializable{
         this.username = user.getUsername();
         this.departement=user.getDepartement().getNomDepartement();
         this.departement_id=user.getDepartement().getId();
+        this.fonction_id=user.getFonction().getId();
+        this.fonction=user.getFonction().getTypeFonction();
+        this.typeplaning=user.getTypeplaning();
+        this.dayworks=user.getDayworks();
         
         String fileDownloadUri = ServletUriComponentsBuilder
           .fromCurrentContextPath()
@@ -50,6 +60,42 @@ public class UserModel implements Serializable{
         this.image=user.getImage();
     }
 
+
+
+    public Set<Integer> getDayworks() {
+        return this.dayworks;
+    }
+
+    public void setDayworks(Set<Integer> dayworks) {
+        this.dayworks = dayworks;
+    }
+ 
+
+
+    public long getFonction_id() {
+        return this.fonction_id;
+    }
+
+    public void setFonction_id(long fonction_id) {
+        this.fonction_id = fonction_id;
+    }
+
+    public String getFonction() {
+        return this.fonction;
+    }
+
+    public void setFonction(String fonction) {
+        this.fonction = fonction;
+    }
+
+
+    public Integer getTypeplaning() {
+        return this.typeplaning;
+    }
+
+    public void setTypeplaning(Integer typeplaning) {
+        this.typeplaning = typeplaning;
+    }
 
     public byte[] getImage() {
         return this.image;

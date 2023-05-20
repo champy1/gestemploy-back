@@ -16,6 +16,8 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 @Entity
 public class User {
 
@@ -50,12 +52,41 @@ public class User {
     private Role authority;
     @ManyToOne
     private Departement departement;
+    @ManyToOne
+    private Fonction fonction;
     @Lob
     @Column(nullable = true, length = Integer.MAX_VALUE)
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private byte[] image;
+    private Integer typeplaning;//0 temps-plein 1: mi-temps, 2:student
+    private Set<Integer> dayworks = new HashSet<>();
     public Long getId() {
         return id;
+    }
+
+
+    public Set<Integer> getDayworks() {
+        return this.dayworks;
+    }
+
+    public void setDayworks(Set<Integer> dayworks) {
+        this.dayworks = dayworks;
+    }
+
+    public Integer getTypeplaning() {
+        return this.typeplaning;
+    }
+
+    public void setTypeplaning(Integer typeplaning) {
+        this.typeplaning = typeplaning;
+    }
+
+    public Fonction getFonction() {
+        return this.fonction;
+    }
+
+    public void setFonction(Fonction fonction) {
+        this.fonction = fonction;
     }
 
     public byte[] getImage() {
